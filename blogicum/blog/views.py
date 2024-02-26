@@ -33,14 +33,12 @@ def post_detail(request: HttpRequest, post_id: int) -> HttpResponse:
 
 def category_posts(request: HttpRequest, category_slug: str) -> HttpResponse:
     """Представление страницы категории постов."""
-    # print(Category.__dict__)
-    # print(Category.__dir__)
     category: Category = get_object_or_404(
         Category.objects.values('title', 'description').filter(
             is_published=True),
         slug=category_slug
     )
-    post_list: Post = Post.objects.filter(
+    post_list: list[Post] = Post.objects.filter(
         category__slug=category_slug,
         pub_date__lte=timezone.now(),
         is_published=True
