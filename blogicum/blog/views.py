@@ -1,7 +1,6 @@
-from datetime import datetime
-
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, render
+from django.utils import timezone
 
 from .models import Category, Post
 
@@ -12,7 +11,7 @@ def index(request: HttpRequest) -> HttpResponse:
     Посты должны быть расположены в обратном порядке по номеру публикации.
     """
     post_list: list[Post] = Post.objects.filter(
-        pub_date__lte=datetime.now(),
+        pub_date__lte=timezone.now(),
         is_published=True,
         category__is_published=True
     ).order_by('-pub_date')[:5]
@@ -23,7 +22,7 @@ def post_detail(request: HttpRequest, post_id: int) -> HttpResponse:
     """Представление станицы поста."""
     post: Post = get_object_or_404(
         Post.objects.filter(
-            pub_date__lte=datetime.now(),
+            pub_date__lte=timezone.now(),
             is_published=True,
             pk=post_id,
             category__is_published=True),
@@ -34,6 +33,8 @@ def post_detail(request: HttpRequest, post_id: int) -> HttpResponse:
 
 def category_posts(request: HttpRequest, category_slug: str) -> HttpResponse:
     """Представление страницы категории постов."""
+    # print(Category.__dict__)
+    # print(Category.__dir__)
     category: Category = get_object_or_404(
         Category.objects.values('title', 'description').filter(
             is_published=True),
@@ -41,7 +42,7 @@ def category_posts(request: HttpRequest, category_slug: str) -> HttpResponse:
     )
     post_list: Post = Post.objects.filter(
         category__slug=category_slug,
-        pub_date__lte=datetime.now(),
+        pub_date__lte=timezone.now(),
         is_published=True
     )
     context: dict[str, Category | list[Post]] = {
