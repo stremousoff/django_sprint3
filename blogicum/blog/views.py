@@ -49,12 +49,7 @@ def post_detail(request: HttpRequest, post_id: int) -> HttpResponse:
     - если пост не найден, должна вернуться ошибка 404.
     """
     post: Post = get_object_or_404(
-        Post.objects.filter(
-            pub_date__lte=timezone.now(),
-            is_published=True,
-            pk=post_id,
-            category__is_published=True),
-        id=post_id
+        get_posts_qs().filter(pk=post_id), id=post_id
     )
     return render(request, 'blog/detail.html', {'post': post})
 
