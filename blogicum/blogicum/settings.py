@@ -91,3 +91,5 @@ USE_L10N = True
 USE_TZ = True
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+NUMBER_OF_POSTS_FOR_MAIN_PAGE: int = 5

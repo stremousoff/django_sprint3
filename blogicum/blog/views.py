@@ -1,8 +1,27 @@
+from http import HTTPStatus
+
+from django.db.models import QuerySet
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 
+from blogicum.settings import NUMBER_OF_POSTS_FOR_MAIN_PAGE
 from .models import Category, Post
+
+
+def get_posts_qs() -> QuerySet[Post]:
+    """Получение одного поста.
+
+    Пост должен быть:
+    - дата публиции не позднее текущего момента;
+    - разрешение на публикацию;
+    - категория поста должна иметь разрешение на публикацию;
+    """
+    return Post.objects.filter(
+        pub_date__lte=timezone.now(),
+        is_published=True,
+        category__is_published=True
+    )
 
 
 def index(request: HttpRequest) -> HttpResponse:
@@ -15,11 +34,8 @@ def index(request: HttpRequest) -> HttpResponse:
     - расположены в обратном порядке по дате публикации;
     - последние пять постов.
     """
-    post_list: list[Post] = Post.objects.filter(
-        pub_date__lte=timezone.now(),
-        is_published=True,
-        category__is_published=True
-    ).order_by('-pub_date')[:5]
+    post_list: list[Post] = get_posts_qs() \
+        .order_by('-pub_date')[:NUMBER_OF_POSTS_FOR_MAIN_PAGE]
     return render(request, 'blog/index.html', {'post_list': post_list})
 
 
@@ -58,18 +74,14 @@ def category_posts(request: HttpRequest, category_slug: str) -> HttpResponse:
             is_published=True),
         slug=category_slug
     )
-    post_list: list[Post] = Post.objects.filter(
-        category__slug=category_slug,
-        pub_date__lte=timezone.now(),
-        is_published=True
-    )
-    context: dict[str, Category | list[Post]] = {
+    posts: QuerySet[Post] = get_posts_qs().filter(category__slug=category_slug)
+    context: dict[str, Category | QuerySet[Post]] = {
         'category': category,
-        'post_list': post_list
+        'post_list': posts
     }
     return render(request, 'blog/category.html', context)
 
 
 def page_not_found(request: HttpRequest, exception: Exception) -> HttpResponse:
     """Представление страницы 404 ошибки."""
-    return render(request, 'blog/404.html', status=404)
+    return render(request, 'blog/404.html', status=HTTPStatus.NOT_FOUND)
