@@ -12,6 +12,9 @@ from .models import Category, Post
 def get_posts_qs() -> QuerySet[Post]:
     """Получение постов из базы данных.
 
+    Возвращает:
+    QuerySet[Post]: объект QuerySet содержащий список постов
+
     Пост должен быть:
     - дата публиции не позднее текущего момента;
     - разрешение на публикацию;
@@ -26,6 +29,12 @@ def get_posts_qs() -> QuerySet[Post]:
 
 def index(request: HttpRequest) -> HttpResponse:
     """Представление главной страницы блога.
+
+    Параметры:
+    request (HttpRequest): объект запроса
+
+    Возвращает:
+    HttpResponse: объект ответа
 
     Посты должны быть:
     - дата публиции не позднее текущего момента;
@@ -42,6 +51,13 @@ def index(request: HttpRequest) -> HttpResponse:
 def post_detail(request: HttpRequest, post_id: int) -> HttpResponse:
     """Представление станицы поста.
 
+    Параметры:
+    request (HttpRequest): объект запроса
+    post_id (int): идентификатор поста
+
+    Возвращает:
+    HttpResponse: объект ответа
+
     Пост должен быть:
     - дата публиции не позднее текущего момента;
     - разрешение на публикацию;
@@ -56,6 +72,13 @@ def post_detail(request: HttpRequest, post_id: int) -> HttpResponse:
 
 def category_posts(request: HttpRequest, category_slug: str) -> HttpResponse:
     """Представление страницы категории постов.
+
+    Параметры:
+    request (HttpRequest): объект запроса
+    category_slug (str): идентификатор категории
+
+    Возвращает:
+    HttpResponse: объект ответа
 
     Категория должна быть:
     - иметь разрешение на публикацию.
@@ -78,5 +101,13 @@ def category_posts(request: HttpRequest, category_slug: str) -> HttpResponse:
 
 
 def page_not_found(request: HttpRequest, exception: Exception) -> HttpResponse:
-    """Представление страницы 404 ошибки."""
+    """Представление страницы 404 ошибки.
+
+    Параметры:
+    request (HttpRequest): объект запроса
+    exception (Exception): исключение
+
+    Возвращает:
+    HttpResponse: объект ответа
+    """
     return render(request, 'blog/404.html', status=HTTPStatus.NOT_FOUND)
