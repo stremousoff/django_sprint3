@@ -1,15 +1,16 @@
 from http import HTTPStatus
+from typing import Any
 
-from django.db.models import QuerySet
+from django.db.models import Q, QuerySet
 from django.http import HttpRequest, HttpResponse
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, get_list_or_404, render
 from django.utils import timezone
 
-from blogicum.settings import NUMBER_OF_POSTS_FOR_MAIN_PAGE
+from .PARAM import NUMBER_OF_POSTS_FOR_MAIN_PAGE
 from .models import Category, Post
 
 
-def get_posts_qs() -> QuerySet[Post]:
+def fiter_posts(obj: Any) -> QuerySet[Post]:
     """Получение постов из базы данных.
 
     Возвращает:
@@ -20,10 +21,9 @@ def get_posts_qs() -> QuerySet[Post]:
     - разрешение на публикацию;
     - категория поста должна иметь разрешение на публикацию;
     """
-    return Post.objects.filter(
-        pub_date__lte=timezone.now(),
-        is_published=True,
-        category__is_published=True
+    return obj.objects.select_related('category').filter(
+        Q(pub_date__lte=timezone.now()) & Q(is_published=True) & Q(
+            category__is_published=True)
     )
 
 
@@ -43,8 +43,9 @@ def index(request: HttpRequest) -> HttpResponse:
     - расположены в обратном порядке по дате публикации;
     - последние пять постов.
     """
-    post_list: list[Post] = get_posts_qs() \
-        .order_by('-pub_date')[:NUMBER_OF_POSTS_FOR_MAIN_PAGE]
+    post_list: QuerySet[Post] = (
+        fiter_posts(Post)[:NUMBER_OF_POSTS_FOR_MAIN_PAGE]
+    )
     return render(request, 'blog/index.html', {'post_list': post_list})
 
 
@@ -64,9 +65,7 @@ def post_detail(request: HttpRequest, post_id: int) -> HttpResponse:
     - категория поста должна иметь разрешение на публикацию;
     - если пост не найден, должна вернуться ошибка 404.
     """
-    post: Post = get_object_or_404(
-        get_posts_qs().filter(pk=post_id), id=post_id
-    )
+    post: Post = get_object_or_404(fiter_posts(Post), id=post_id)
     return render(request, 'blog/detail.html', {'post': post})
 
 
@@ -92,7 +91,10 @@ def category_posts(request: HttpRequest, category_slug: str) -> HttpResponse:
             is_published=True),
         slug=category_slug
     )
-    posts: QuerySet[Post] = get_posts_qs().filter(category__slug=category_slug)
+    posts: QuerySet[Post] = get_list_or_404(
+        fiter_posts(Post),
+        category__slug=category_slug
+    )
     context: dict[str, Category | QuerySet[Post]] = {
         'category': category,
         'post_list': posts
