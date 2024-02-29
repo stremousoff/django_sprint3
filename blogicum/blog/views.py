@@ -1,5 +1,4 @@
 from http import HTTPStatus
-from typing import Any
 
 from django.db.models import Q, QuerySet
 from django.http import HttpRequest, HttpResponse
@@ -10,7 +9,7 @@ from .PARAM import NUMBER_OF_POSTS_FOR_MAIN_PAGE
 from .models import Category, Post
 
 
-def filter_posts(obj: Any) -> QuerySet[Post]:
+def filter_posts(obj: Post.objects) -> QuerySet[Post]:
     """Получение постов из базы данных.
 
     Возвращает:
