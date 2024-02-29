@@ -1,7 +1,7 @@
 from django.db import models
 
 
-class PublishedCreated(models.Model):
+class IsPublishedCreatedAt(models.Model):
     """Абстрактная модель для модели публикации.
 
     Содержит в себе поля разрешения на публикацию и дату создания.
