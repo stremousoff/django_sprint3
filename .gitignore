@@ -148,6 +148,7 @@ dmypy.json
 # папки со статикой и медиа
 media/
 /templates/
+/blogicum/static_dev/
 
 #файлы с данными
 blogicum/db.sqlite3
