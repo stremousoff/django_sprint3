@@ -10,7 +10,7 @@ from .PARAM import NUMBER_OF_POSTS_FOR_MAIN_PAGE
 from .models import Category, Post
 
 
-def fiter_posts(obj: Any) -> QuerySet[Post]:
+def filter_posts(obj: Any) -> QuerySet[Post]:
     """Получение постов из базы данных.
 
     Возвращает:
@@ -44,7 +44,7 @@ def index(request: HttpRequest) -> HttpResponse:
     - последние пять постов.
     """
     post_list: QuerySet[Post] = (
-        fiter_posts(Post)[:NUMBER_OF_POSTS_FOR_MAIN_PAGE]
+        filter_posts(Post)[:NUMBER_OF_POSTS_FOR_MAIN_PAGE]
     )
     return render(request, 'blog/index.html', {'post_list': post_list})
 
@@ -65,7 +65,7 @@ def post_detail(request: HttpRequest, post_id: int) -> HttpResponse:
     - категория поста должна иметь разрешение на публикацию;
     - если пост не найден, должна вернуться ошибка 404.
     """
-    post: Post = get_object_or_404(fiter_posts(Post), id=post_id)
+    post: Post = get_object_or_404(filter_posts(Post), id=post_id)
     return render(request, 'blog/detail.html', {'post': post})
 
 
@@ -92,7 +92,7 @@ def category_posts(request: HttpRequest, category_slug: str) -> HttpResponse:
         slug=category_slug
     )
     posts: QuerySet[Post] = get_list_or_404(
-        fiter_posts(Post),
+        filter_posts(Post),
         category__slug=category_slug
     )
     context: dict[str, Category | QuerySet[Post]] = {
