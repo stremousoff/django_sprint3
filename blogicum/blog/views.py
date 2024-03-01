@@ -20,7 +20,8 @@ def filter_posts(obj: Post.objects) -> QuerySet[Post]:
     - разрешение на публикацию;
     - категория поста должна иметь разрешение на публикацию;
     """
-    return obj.objects.select_related('category', 'location').filter(
+    return obj.objects.select_related(
+        'category', 'location', 'author').filter(
         pub_date__lte=timezone.now(), is_published=True,
         category__is_published=True
     )
@@ -64,7 +65,7 @@ def post_detail(request: HttpRequest, post_id: int) -> HttpResponse:
     - категория поста должна иметь разрешение на публикацию;
     - если пост не найден, должна вернуться ошибка 404.
     """
-    post: Post = get_object_or_404(filter_posts(Post), id=post_id)
+    post: Post = get_object_or_404(filter_posts(Post), pk=post_id)
     return render(request, 'blog/detail.html', {'post': post})
 
 
@@ -90,13 +91,9 @@ def category_posts(request: HttpRequest, category_slug: str) -> HttpResponse:
             is_published=True),
         slug=category_slug
     )
-    post_list: QuerySet[Post] = category.posts.filter(
-        pub_date__lte=timezone.now(),
-        is_published=True
-    )  # здесь решил повыпендирваться что умею пользоваться обратными связями,
-    # но посмотрев дебагер по количеству запросов к базе вообще не понял для
-    # чего это всё нужно - хотелось бы теперь до ума довести запросы к базе
-    # везде, что бы выжать максимальную эффективность. Поможешь/подскажешь? (:
+    post_list: QuerySet[Post] = filter_posts(Post).filter(
+        category__slug=category_slug
+    )
     context: dict[str, Category | QuerySet[Post]] = {
         'category': category,
         'post_list': post_list
