@@ -1,8 +1,8 @@
 from http import HTTPStatus
 
-from django.db.models import Q, QuerySet
+from django.db.models import QuerySet
 from django.http import HttpRequest, HttpResponse
-from django.shortcuts import get_object_or_404, get_list_or_404, render
+from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 
 from .PARAM import NUMBER_OF_POSTS_FOR_MAIN_PAGE
@@ -20,9 +20,9 @@ def filter_posts(obj: Post.objects) -> QuerySet[Post]:
     - разрешение на публикацию;
     - категория поста должна иметь разрешение на публикацию;
     """
-    return obj.objects.select_related('category').filter(
-        Q(pub_date__lte=timezone.now()) & Q(is_published=True) & Q(
-            category__is_published=True)
+    return obj.objects.select_related('category', 'location').filter(
+        pub_date__lte=timezone.now(), is_published=True,
+        category__is_published=True
     )
 
 
@@ -86,17 +86,20 @@ def category_posts(request: HttpRequest, category_slug: str) -> HttpResponse:
     - разрешение на публикацию.
     """
     category: Category = get_object_or_404(
-        Category.objects.values('title', 'description').filter(
+        Category.objects.filter(
             is_published=True),
         slug=category_slug
     )
-    posts: QuerySet[Post] = get_list_or_404(
-        filter_posts(Post),
-        category__slug=category_slug
-    )
+    post_list: QuerySet[Post] = category.posts.filter(
+        pub_date__lte=timezone.now(),
+        is_published=True
+    )  # здесь решил повыпендирваться что умею пользоваться обратными связями,
+    # но посмотрев дебагер по количеству запросов к базе вообще не понял для
+    # чего это всё нужно - хотелось бы теперь до ума довести запросы к базе
+    # везде, что бы выжать максимальную эффективность. Поможешь/подскажешь? (:
     context: dict[str, Category | QuerySet[Post]] = {
         'category': category,
-        'post_list': posts
+        'post_list': post_list
     }
     return render(request, 'blog/category.html', context)
 
