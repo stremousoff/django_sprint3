@@ -1,8 +1,10 @@
 from django.contrib import admin
 
+from .constants import SLICE_FILD_ADMIN
 from .models import Category, Location, Post
 
 
+@admin.register(Post)
 class PostAdmin(admin.ModelAdmin):
     """Кастомизация админки для модели Post."""
 
@@ -31,13 +33,10 @@ class PostAdmin(admin.ModelAdmin):
     @admin.display(description='Текст')
     def text_short(obj: Post) -> str:
         """Укороченное описание поста для отображения в админке."""
-        max_length = 150  # Максимальное количество символов для отображения
-        if len(obj.text) > max_length:
-            return obj.text[:max_length] + '...'
-        else:
-            return obj.text
+        return f'{obj.text[:SLICE_FILD_ADMIN]}...'
 
 
+@admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
     """Кастомизация админки для модели Category."""
 
@@ -61,13 +60,10 @@ class CategoryAdmin(admin.ModelAdmin):
     @admin.display(description='Описание')
     def description_short(obj: Category) -> str:
         """Укороченное названия категории для отображения в админке."""
-        max_length = 50  # Максимальное количество символов для отображения
-        if len(obj.description) > max_length:
-            return obj.description[:max_length] + '...'
-        else:
-            return obj.description
+        return f'{obj.description[:SLICE_FILD_ADMIN]}...'
 
 
+@admin.register(Location)
 class LocationAdmin(admin.ModelAdmin):
     """Кастомизация админки для модели Location."""
 
@@ -79,8 +75,3 @@ class LocationAdmin(admin.ModelAdmin):
     list_editable = ('is_published',)
     list_filter = ('name',)
     list_per_page = 10
-
-
-admin.site.register(Post, PostAdmin)
-admin.site.register(Category, CategoryAdmin)
-admin.site.register(Location, LocationAdmin)

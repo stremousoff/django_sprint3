@@ -5,7 +5,7 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 
-from .PARAM import NUMBER_OF_POSTS_FOR_MAIN_PAGE
+from .constants import NUMBER_OF_POSTS
 from .models import Category, Post
 
 
@@ -20,9 +20,10 @@ def filter_posts(obj: Post.objects) -> QuerySet[Post]:
     - разрешение на публикацию;
     - категория поста должна иметь разрешение на публикацию;
     """
-    return obj.objects.select_related(
+    return obj.select_related(
         'category', 'location', 'author').filter(
-        pub_date__lte=timezone.now(), is_published=True,
+        pub_date__lte=timezone.now(),
+        is_published=True,
         category__is_published=True
     )
 
@@ -43,9 +44,7 @@ def index(request: HttpRequest) -> HttpResponse:
     - расположены в обратном порядке по дате публикации;
     - последние пять постов.
     """
-    post_list: QuerySet[Post] = (
-        filter_posts(Post)[:NUMBER_OF_POSTS_FOR_MAIN_PAGE]
-    )
+    post_list: QuerySet[Post] = filter_posts(Post.objects)[:NUMBER_OF_POSTS]
     return render(request, 'blog/index.html', {'post_list': post_list})
 
 
@@ -65,7 +64,7 @@ def post_detail(request: HttpRequest, post_id: int) -> HttpResponse:
     - категория поста должна иметь разрешение на публикацию;
     - если пост не найден, должна вернуться ошибка 404.
     """
-    post: Post = get_object_or_404(filter_posts(Post), pk=post_id)
+    post: Post = get_object_or_404(filter_posts(Post.objects), pk=post_id)
     return render(request, 'blog/detail.html', {'post': post})
 
 
@@ -87,13 +86,9 @@ def category_posts(request: HttpRequest, category_slug: str) -> HttpResponse:
     - разрешение на публикацию.
     """
     category: Category = get_object_or_404(
-        Category.objects.filter(
-            is_published=True),
-        slug=category_slug
+        Category, is_published=True, slug=category_slug
     )
-    post_list: QuerySet[Post] = filter_posts(Post).filter(
-        category__slug=category_slug
-    )
+    post_list: QuerySet[Post] = filter_posts(category.posts)
     context: dict[str, Category | QuerySet[Post]] = {
         'category': category,
         'post_list': post_list

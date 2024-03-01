@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 
-from blog.PARAM import MAX_LENGTH_TITLE, LENGTH_OF_STR_CLASS
+from blog.constants import MAX_FILD_LENGTH, SLICE_NAME
 from core.models import IsPublishedCreatedAt
 
 User = get_user_model()  # получение модели пользователя
@@ -10,7 +10,7 @@ User = get_user_model()  # получение модели пользовате�
 class Category(IsPublishedCreatedAt):
     """Модель категории."""
 
-    title = models.CharField('Заголовок', max_length=MAX_LENGTH_TITLE)
+    title = models.CharField('Заголовок', max_length=MAX_FILD_LENGTH)
     description = models.TextField('Описание')
     slug = models.SlugField(
         'Идентификатор',
@@ -24,26 +24,26 @@ class Category(IsPublishedCreatedAt):
         verbose_name_plural = 'Категории'
 
     def __str__(self):
-        return self.title[:LENGTH_OF_STR_CLASS]
+        return self.title[:SLICE_NAME]
 
 
 class Location(IsPublishedCreatedAt):
     """Модель местоположения."""
 
-    name = models.CharField('Название места', max_length=MAX_LENGTH_TITLE)
+    name = models.CharField('Название места', max_length=MAX_FILD_LENGTH)
 
     class Meta:
         verbose_name = 'местоположение'
         verbose_name_plural = 'Местоположения'
 
     def __str__(self):
-        return self.name[:LENGTH_OF_STR_CLASS]
+        return self.name[:SLICE_NAME]
 
 
 class Post(IsPublishedCreatedAt):
     """Модель поста."""
 
-    title = models.CharField('Заголовок', max_length=MAX_LENGTH_TITLE)
+    title = models.CharField('Заголовок', max_length=MAX_FILD_LENGTH)
     text = models.TextField('Текст')
     pub_date = models.DateTimeField(
         'Дата и время публикации',
@@ -54,6 +54,7 @@ class Post(IsPublishedCreatedAt):
         User,
         on_delete=models.CASCADE,
         verbose_name='Автор публикации',
+        related_name='posts',
     )
     location = models.ForeignKey(
         Location,
@@ -61,13 +62,14 @@ class Post(IsPublishedCreatedAt):
         null=True,
         blank=True,
         verbose_name='Местоположение',
+        related_name='posts'
     )
     category = models.ForeignKey(
         Category,
         on_delete=models.SET_NULL,
         null=True,
         verbose_name='Категория',
-        related_name='posts',
+        related_name='posts'
     )
 
     class Meta:
@@ -76,4 +78,4 @@ class Post(IsPublishedCreatedAt):
         ordering = ('-pub_date',)
 
     def __str__(self):
-        return self.title[:LENGTH_OF_STR_CLASS]
+        return self.title[:SLICE_NAME]
