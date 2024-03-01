@@ -54,7 +54,6 @@ class Post(IsPublishedCreatedAt):
         User,
         on_delete=models.CASCADE,
         verbose_name='Автор публикации',
-        related_name='posts',
     )
     location = models.ForeignKey(
         Location,
@@ -62,7 +61,6 @@ class Post(IsPublishedCreatedAt):
         null=True,
         blank=True,
         verbose_name='Местоположение',
-        related_name='posts',
     )
     category = models.ForeignKey(
         Category,
