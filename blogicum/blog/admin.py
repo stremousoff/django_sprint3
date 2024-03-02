@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .constants import SLICE_FILD_ADMIN
+from .constants import LENGTH_STRING_ADMIN
 from .models import Category, Location, Post
 
 
@@ -33,7 +33,7 @@ class PostAdmin(admin.ModelAdmin):
     @admin.display(description='Текст')
     def text_short(obj: Post) -> str:
         """Укороченное описание поста для отображения в админке."""
-        return f'{obj.text[:SLICE_FILD_ADMIN]}...'
+        return f'{obj.text[:LENGTH_STRING_ADMIN]}...'
 
 
 @admin.register(Category)
@@ -60,7 +60,7 @@ class CategoryAdmin(admin.ModelAdmin):
     @admin.display(description='Описание')
     def description_short(obj: Category) -> str:
         """Укороченное названия категории для отображения в админке."""
-        return f'{obj.description[:SLICE_FILD_ADMIN]}...'
+        return f'{obj.description[:LENGTH_STRING_ADMIN]}...'
 
 
 @admin.register(Location)

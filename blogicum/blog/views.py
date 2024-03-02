@@ -21,7 +21,10 @@ def filter_posts(obj: Post.objects) -> QuerySet[Post]:
     - категория поста должна иметь разрешение на публикацию;
     """
     return obj.select_related(
-        'category', 'location', 'author').filter(
+        'category',
+        'location',
+        'author'
+    ).filter(
         pub_date__lte=timezone.now(),
         is_published=True,
         category__is_published=True
