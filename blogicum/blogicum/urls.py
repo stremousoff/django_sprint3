@@ -11,5 +11,3 @@ urlpatterns = [
 if settings.DEBUG:
     import debug_toolbar
     urlpatterns += (path('__debug__/', include(debug_toolbar.urls)),)
-
-handler404 = 'blog.views.page_not_found'

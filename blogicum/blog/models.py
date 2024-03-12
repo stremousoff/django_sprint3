@@ -1,10 +1,26 @@
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.utils import timezone
 
 from blog.constants import LENGTH_STRING, MAX_LENGTH
 from core.models import IsPublishedCreatedAt
 
 User = get_user_model()  # получение модели пользователя
+
+
+class PublishedQuerySet(models.QuerySet):
+    """Менеджер публикации."""
+
+    def published(self):
+        return self.select_related(
+            'category',
+            'location',
+            'author'
+        ).filter(
+            pub_date__lte=timezone.now(),
+            is_published=True,
+            category__is_published=True
+        )
 
 
 class Category(IsPublishedCreatedAt):
@@ -76,6 +92,8 @@ class Post(IsPublishedCreatedAt):
         verbose_name = 'публикация'
         verbose_name_plural = 'Публикации'
         ordering = ('-pub_date',)
+
+    objects = PublishedQuerySet.as_manager()
 
     def __str__(self):
         return self.title[:LENGTH_STRING]
